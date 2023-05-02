@@ -1,0 +1,180 @@
+<script setup lang="ts">
+import { computed, reactive, ref } from 'vue'
+import draggable from 'vuedraggable'
+import _defaultConfiguration from '../shortcut-hero.example.json'
+import ActionComponent from './components/Action.vue'
+import CodeEditor from './components/CodeEditor.vue'
+import Chevron from './components/Chevron.vue'
+import H1 from './components/H1.vue'
+import H2 from './components/H2.vue'
+import H3 from './components/H3.vue'
+import Kbd from './components/Kbd.vue'
+import { KeybdKey } from '../bindings/KeybdKeyDef'
+
+/** Inject an `id` property to each action */
+const defaultConfiguration = {
+  ..._defaultConfiguration,
+  keyboard_shortcuts: _defaultConfiguration.keyboard_shortcuts.map(shortcut => ({
+    ...shortcut,
+    actions: shortcut.actions.map(action => ({ ...action, id: Math.random() })),
+  })),
+}
+
+const drag = ref(false)
+const newKeyInput = ref('')
+const configuration = reactive(defaultConfiguration)
+const editedShortcutIndex = ref<number | null>(null)
+
+const dragOptions = computed(() => ({
+  animation: 200,
+  group: 'description',
+  disabled: false,
+  ghostClass: 'ghost',
+}))
+
+/** Remove the `id` injected property */
+const configurationJson = computed(() => {
+  const clone = JSON.parse(JSON.stringify(configuration))
+  clone.keyboard_shortcuts = clone.keyboard_shortcuts.map((shortcut: any) => ({
+    ...shortcut,
+    actions: shortcut.actions.map((action: any) => {
+      const { id, ...rest } = action
+      return rest
+    }),
+  }))
+  return clone
+})
+
+const addShortcut = () => {
+  configuration.keyboard_shortcuts.push({
+    description: 'Open the browser',
+    keys: [],
+    actions: [],
+  })
+}
+
+const addKeyToShortcut = (shortcutIndex: number, key: string) => {
+  configuration.keyboard_shortcuts[shortcutIndex].keys.push(key)
+}
+</script>
+
+<template>
+  <div class="p-4">
+    <H1>Shortcut Hero</H1>
+    <div class="p-3 grid grid-cols-2 gap-8">
+      <div>
+        <H2>General</H2>
+        <H3>OpenAI API Key</H3>
+        <input
+          type="text"
+          class="w-full p-2 rounded-md border border-gray-300 bg-gray-100 text-gray-800"
+          v-model="configuration.openai_api_key"
+        />
+
+        <H2>Shortcuts</H2>
+        <button
+          class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center"
+          @click="addShortcut"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="w-6 h-6 mr-2"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" class="text-gray-800" />
+          </svg>
+          <span class="text-gray-800">New Shortcut</span>
+        </button>
+
+        <div
+          v-for="({ description, keys }, index) in configuration.keyboard_shortcuts"
+          :key="index"
+          class="my-4 p-5 bg-white rounded-lg shadow shadow-gray-600 flex items-center transition ease-in-out hover:-translate-y-1 hover:shadow-xl hover:bg-gray-100 cursor-pointer"
+          :class="{
+            // 'shadow-xl': editedShortcutIndex === index,
+            'bg-gradient-to-r from-orange-200 to-pink-200': editedShortcutIndex === index,
+          }"
+          @click="editedShortcutIndex = index"
+        >
+          <div class="flex flex-col items-left justify-center gap-7">
+            <div class="text-xl font-bold">Shortcut #{{ index + 1 }}</div>
+            <div class="text-lg">{{ description }}</div>
+            <div>
+              <Kbd v-for="key in keys" :key="key">{{ key }}</Kbd>
+            </div>
+          </div>
+        </div>
+
+        <H2>Configuration File</H2>
+        <CodeEditor :code="configurationJson" :key="configurationJson" />
+      </div>
+      <div v-if="editedShortcutIndex !== null">
+        <H2>Edit Shortcut #{{ editedShortcutIndex + 1 }}</H2>
+
+        <H3>Description</H3>
+        <textarea
+          type="text"
+          class="w-full p-2 rounded-md border border-gray-300 bg-gray-100 text-gray-800"
+          rows="4"
+          v-model="configuration.keyboard_shortcuts[editedShortcutIndex].description"
+        />
+
+        <H3>Keys</H3>
+        <div>
+          <div class="my-4">
+            <Kbd
+              v-for="(key, index) in configuration.keyboard_shortcuts[editedShortcutIndex].keys"
+              :key="`${key}-${index}`"
+              class="text-xl"
+              deletable
+              @click="configuration.keyboard_shortcuts[editedShortcutIndex].keys.splice(index, 1)"
+            >
+              {{ key }}
+            </Kbd>
+          </div>
+          <div class="mt-6 flex">
+            <input
+              list="add-keys-list"
+              class="bg-gray-100 p-2 rounded shadow shadow-gray-400 mr-4"
+              id="add-keys-choice"
+              name="add-keys-choice"
+              placeholder="Add another key..."
+              v-model="newKeyInput"
+            />
+
+            <datalist id="add-keys-list">
+              <option v-for="key in Object.values(KeybdKey)" :key="key" :value="key"></option>
+            </datalist>
+
+            <button
+              class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded flex items-center"
+              @click="addKeyToShortcut(editedShortcutIndex, newKeyInput)"
+            >
+              <span class="text-gray-800">Add</span>
+            </button>
+          </div>
+        </div>
+
+        <H2>Actions</H2>
+        <draggable
+          class="flex items-center justify-center flex-col"
+          v-model="configuration.keyboard_shortcuts[editedShortcutIndex].actions"
+          v-bind="dragOptions"
+          @start="drag = true"
+          @end="drag = false"
+          item-key="id"
+        >
+          <template #item="{ element, index }">
+            <div class="flex flex-col items-center justify-center">
+              <ActionComponent :action="element" />
+              <Chevron v-if="index < configuration.keyboard_shortcuts[editedShortcutIndex].actions.length - 1" />
+            </div>
+          </template>
+        </draggable>
+      </div>
+    </div>
+  </div>
+</template>
