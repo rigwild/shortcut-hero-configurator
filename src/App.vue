@@ -10,6 +10,7 @@ import H2 from './components/H2.vue'
 import H3 from './components/H3.vue'
 import Kbd from './components/Kbd.vue'
 import { KeybdKey } from '../bindings/KeybdKeyDef'
+import { AvailableActions } from '../bindings/Action'
 
 /** Inject an `id` property to each action */
 const defaultConfiguration = {
@@ -24,6 +25,7 @@ const drag = ref(false)
 const newKeyInput = ref('')
 const configuration = reactive(defaultConfiguration)
 const editedShortcutIndex = ref<number | null>(null)
+const addActionSelect = ref<keyof typeof AvailableActions>('debug')
 
 const dragOptions = computed(() => ({
   animation: 200,
@@ -31,6 +33,14 @@ const dragOptions = computed(() => ({
   disabled: false,
   ghostClass: 'ghost',
 }))
+
+const variablesInShortcut = computed(() =>
+  editedShortcutIndex.value === null
+    ? []
+    : configuration.keyboard_shortcuts[editedShortcutIndex.value].actions
+        .filter(action => action.action === 'set_variable')
+        .map(action => (action as any).name)
+)
 
 /** Remove the `id` injected property */
 const configurationJson = computed(() => {
@@ -141,7 +151,7 @@ const addKeyToShortcut = (shortcutIndex: number, key: string) => {
               class="bg-gray-100 p-2 rounded shadow shadow-gray-400 mr-4"
               id="add-keys-choice"
               name="add-keys-choice"
-              placeholder="Add another key..."
+              placeholder="Add a key..."
               v-model="newKeyInput"
             />
 
@@ -159,6 +169,49 @@ const addKeyToShortcut = (shortcutIndex: number, key: string) => {
         </div>
 
         <H2>Actions</H2>
+
+        <H3>Variables</H3>
+        <ul class="list-disc text-gray-300">
+          <li v-for="variable in variablesInShortcut" :key="variable" class="ml-6 mt-1">
+            <code>{{ variable }}</code>
+          </li>
+        </ul>
+
+        <H3>Flow</H3>
+        <div class="flex items-center justify-center my-4">
+          <select class="bg-gray-100 p-2 rounded shadow shadow-gray-400 mr-4" v-model="addActionSelect">
+            <option
+              v-for="(action, index) in AvailableActions"
+              :key="`${index}-${action.description}`"
+              :value="action.action"
+            >
+              {{ action.description }}
+            </option>
+            <option v-for="action in AvailableActionsKeys" :key="action" :value="action"></option>
+          </select>
+
+          <button
+            class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center"
+            @click="addShortcut"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-6 h-6 mr-2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                class="text-gray-800"
+              />
+            </svg>
+            <span class="text-gray-800">Add Action</span>
+          </button>
+        </div>
         <draggable
           class="flex items-center justify-center flex-col"
           v-model="configuration.keyboard_shortcuts[editedShortcutIndex].actions"
@@ -169,7 +222,7 @@ const addKeyToShortcut = (shortcutIndex: number, key: string) => {
         >
           <template #item="{ element, index }">
             <div class="flex flex-col items-center justify-center">
-              <ActionComponent :action="element" />
+              <ActionComponent :action="element" :index="index" />
               <Chevron v-if="index < configuration.keyboard_shortcuts[editedShortcutIndex].actions.length - 1" />
             </div>
           </template>
