@@ -84,6 +84,8 @@ const addShortcut = () => {
 }
 
 const addKeyToShortcut = (shortcutIndex: number, key: string) => {
+  // Check if key exists
+  if (!Object.values(KeybdKey).includes(key as any)) return
   configuration.keyboard_shortcuts[shortcutIndex].keys.push(key)
 }
 
