@@ -10,12 +10,10 @@ export const AvailableActions = {
     args: {
       name: {
         name: 'name',
-        type: 'string',
         description: 'Variable Name',
       },
       value: {
         name: 'value',
-        type: 'string',
         description: 'Variable Value',
       },
     },
@@ -26,12 +24,10 @@ export const AvailableActions = {
     args: {
       name: {
         name: 'name',
-        type: 'string',
         description: 'Variable Name',
       },
       amount: {
         name: 'amount',
-        type: 'string',
         description: 'Increment Amount',
       },
     },
@@ -42,7 +38,6 @@ export const AvailableActions = {
     args: {
       name: {
         name: 'name',
-        type: 'string',
         description: 'Variable Name',
       },
     },
@@ -53,7 +48,6 @@ export const AvailableActions = {
     args: {
       duration_ms: {
         name: 'duration_ms',
-        type: 'string',
         description: 'Duration (in milliseconds)',
       },
     },
@@ -69,7 +63,6 @@ export const AvailableActions = {
     args: {
       step: {
         name: 'step',
-        type: 'string',
         description: 'Step',
       },
     },
@@ -80,7 +73,6 @@ export const AvailableActions = {
     args: {
       step: {
         name: 'step',
-        type: 'string',
         description: 'Step',
       },
     },
@@ -91,27 +83,22 @@ export const AvailableActions = {
     args: {
       operation: {
         name: 'operation',
-        type: 'string',
         description: 'Operation',
       },
       a: {
         name: 'a',
-        type: 'string',
         description: 'A',
       },
       b: {
         name: 'b',
-        type: 'string',
         description: 'B',
       },
       step_true: {
         name: 'step_true',
-        type: 'string',
         description: 'Step (True)',
       },
       step_false: {
         name: 'step_false',
-        type: 'string',
         description: 'Step (False)',
       },
     },
@@ -122,27 +109,22 @@ export const AvailableActions = {
     args: {
       operation: {
         name: 'operation',
-        type: 'string',
         description: 'Operation',
       },
       a: {
         name: 'a',
-        type: 'string',
         description: 'A',
       },
       b: {
         name: 'b',
-        type: 'string',
         description: 'B',
       },
       step_true: {
         name: 'step_true',
-        type: 'string',
         description: 'Step (True)',
       },
       step_false: {
         name: 'step_false',
-        type: 'string',
         description: 'Step (False)',
       },
     },
@@ -153,12 +135,10 @@ export const AvailableActions = {
     args: {
       command: {
         name: 'command',
-        type: 'string',
         description: 'Command',
       },
       args: {
         name: 'args',
-        type: 'string',
         description: 'Args',
       },
     },
@@ -169,7 +149,6 @@ export const AvailableActions = {
     args: {
       content: {
         name: 'content',
-        type: 'string',
         description: 'Content',
       },
     },
@@ -180,12 +159,10 @@ export const AvailableActions = {
     args: {
       title: {
         name: 'title',
-        type: 'string',
         description: 'Title',
       },
       body: {
         name: 'body',
-        type: 'string',
         description: 'Body',
       },
     },
@@ -201,7 +178,6 @@ export const AvailableActions = {
     args: {
       content: {
         name: 'content',
-        type: 'string',
         description: 'Content',
       },
     },
@@ -212,12 +188,10 @@ export const AvailableActions = {
     args: {
       pre_prompt: {
         name: 'pre_prompt',
-        type: 'string',
         description: 'Pre Prompt',
       },
       prompt: {
         name: 'prompt',
-        type: 'string',
         description: 'Prompt',
       },
     },
