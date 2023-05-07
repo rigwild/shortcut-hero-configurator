@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, nextTick, reactive, ref, watch } from 'vue'
 import draggable from 'vuedraggable'
 import _defaultConfiguration from '../shortcut-hero.example.json'
 import ActionComponent from './components/Action.vue'
@@ -24,8 +24,24 @@ const defaultConfiguration = {
 const drag = ref(false)
 const newKeyInput = ref('')
 const configuration = reactive(defaultConfiguration)
-const editedShortcutIndex = ref<number | null>(null)
+const editedShortcutIndex = ref<number | null>(0)
 const addActionSelect = ref<keyof typeof AvailableActions>('debug')
+
+// load from local storage on mount
+const stateConfiguration = localStorage.getItem('state-configuration')
+if (stateConfiguration) {
+  const parsed = JSON.parse(stateConfiguration)
+  configuration.keyboard_shortcuts = parsed.keyboard_shortcuts
+  configuration.openai_api_key = parsed.openai_api_key
+}
+const stateEditedShortcutIndex = localStorage.getItem('state-editedShortcutIndex')
+if (stateEditedShortcutIndex) {
+  editedShortcutIndex.value = parseInt(stateEditedShortcutIndex)
+}
+
+// save to local storage on change
+watch(configuration, (newConfig, _oldConfig) => localStorage.setItem('state-configuration', JSON.stringify(newConfig)))
+watch(editedShortcutIndex, (newIndex, _oldIndex) => localStorage.setItem('state-editedShortcutIndex', newIndex + ''))
 
 const dragOptions = computed(() => ({
   animation: 200,
@@ -124,9 +140,9 @@ const addActionToShortcut = (
         </button>
 
         <div
-          v-for="({ description, keys }, index) in configuration.keyboard_shortcuts"
-          :key="index"
-          class="my-4 p-5 bg-white rounded-lg shadow shadow-gray-600 flex items-center transition ease-in-out hover:-translate-y-1 hover:shadow-xl hover:bg-gray-100 cursor-pointer"
+          v-for="({ description, keys, actions }, index) in configuration.keyboard_shortcuts"
+          :key="`${index}-${actions.map(x => x.id).join('-')}`"
+          class="my-4 p-5 bg-white rounded-lg shadow shadow-gray-600 flex items-center justify-between transition ease-in-out hover:-translate-y-1 hover:shadow-xl hover:bg-gray-100 cursor-pointer"
           :class="{
             // 'shadow-xl': editedShortcutIndex === index,
             'bg-gradient-to-r from-orange-200 to-pink-200': editedShortcutIndex === index,
@@ -140,6 +156,31 @@ const addActionToShortcut = (
               <Kbd v-for="key in keys" :key="key">{{ key }}</Kbd>
             </div>
           </div>
+
+          <button
+            @click.stop="
+              () => {
+                editedShortcutIndex = null
+                configuration.keyboard_shortcuts.splice(index, 1)
+              }
+            "
+            class="text-gray-800 ml-2 cursor-pointer"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-6 h-6"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+              />
+            </svg>
+          </button>
         </div>
 
         <H2>Configuration File</H2>
