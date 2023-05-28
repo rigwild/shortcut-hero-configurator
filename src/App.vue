@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, reactive, ref, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import draggable from 'vuedraggable'
 import _defaultConfiguration from '../shortcut-hero.example.json'
 import ActionComponent from './components/Action.vue'
